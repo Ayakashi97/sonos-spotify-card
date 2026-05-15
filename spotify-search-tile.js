@@ -38,14 +38,15 @@ class SpotifySearchTile extends LitElement {
         </div>
         
         ${this._searching ? html`<div class="loading">Searching...</div>` : ""}
+        ${!this._searching && this._results.length === 0 && this.shadowRoot?.getElementById('searchInput')?.value ? html`<div class="loading">No results found.</div>` : ""}
         
         <div class="results">
           ${this._results.map(item => html`
             <div class="result-item" @click="${() => this._playMedia(item.media_content_id, item.media_content_type)}">
-              <img src="${item.thumbnail}" alt="${item.title}" onerror="this.style.display='none'">
+              <img src="${item.thumbnail || item.image || item.picture}" alt="${item.title}" onerror="this.src='https://raw.githubusercontent.com/Ayakashi97/sonos-spotify-card/main/icon.png'; this.style.opacity='0.5'">
               <div class="result-info">
                 <div class="result-title">${item.title}</div>
-                <div class="result-subtitle">${item.subtitle || ""}</div>
+                <div class="result-subtitle">${item.subtitle || item.artist || item.author || ""}</div>
               </div>
             </div>
           `)}
@@ -66,34 +67,86 @@ class SpotifySearchTile extends LitElement {
     this._searching = true;
     this._results = [];
 
+    const spotifyEntity = this.config.spotify_entity;
+    console.log("[SpotifySearch] Starting search for:", query, "using entity:", spotifyEntity);
+
     try {
-      const spotifyEntity = this.config.spotify_entity;
-      let response;
+      // Method 1: media_player/search_media (Latest HA)
       try {
-        response = await this.hass.callWS({
+        console.log("[SpotifySearch] Attempting media_player/search_media...");
+        const response = await this.hass.callWS({
           type: "media_player/search_media",
           entity_id: spotifyEntity,
           query: query
         });
+        console.log("[SpotifySearch] search_media response:", response);
+        if (this._parseResults(response)) {
+          this._searching = false;
+          return;
+        }
       } catch (e) {
-        response = await this.hass.callWS({
+        console.warn("[SpotifySearch] search_media failed or not supported:", e.message);
+      }
+
+      // Method 2: media_player/browse_media (Standard fallback)
+      try {
+        console.log("[SpotifySearch] Attempting media_player/browse_media search...");
+        const response = await this.hass.callWS({
           type: "media_player/browse_media",
           entity_id: spotifyEntity,
           media_content_type: "search",
           media_content_id: query
         });
+        console.log("[SpotifySearch] browse_media response:", response);
+        if (this._parseResults(response)) {
+          this._searching = false;
+          return;
+        }
+      } catch (e) {
+        console.warn("[SpotifySearch] browse_media search failed:", e.message);
       }
 
-      if (response && response.children) {
-        this._results = response.children;
-      } else if (response && response.items) {
-        this._results = response.items;
+      // Method 3: Direct Spotify Integration Search (Old school)
+      try {
+        console.log("[SpotifySearch] Attempting direct spotify search content ID...");
+        const response = await this.hass.callWS({
+          type: "media_player/browse_media",
+          entity_id: spotifyEntity,
+          media_content_type: "library",
+          media_content_id: `spotify:search:${query}`
+        });
+        console.log("[SpotifySearch] direct search response:", response);
+        this._parseResults(response);
+      } catch (e) {
+        console.warn("[SpotifySearch] direct search failed:", e.message);
       }
+
     } catch (err) {
-      console.error("Spotify Search failed:", err);
+      console.error("[SpotifySearch] Search process failed entirely:", err);
     } finally {
       this._searching = false;
+      this.requestUpdate();
     }
+  }
+
+  _parseResults(response) {
+    if (!response) return false;
+    
+    let results = [];
+    if (response.children) {
+      results = response.children;
+    } else if (response.items) {
+      results = response.items;
+    } else if (Array.isArray(response)) {
+      results = response;
+    }
+
+    if (results.length > 0) {
+      this._results = results;
+      console.log("[SpotifySearch] Parsed results count:", results.length);
+      return true;
+    }
+    return false;
   }
 
   _playMedia(contentId, contentType) {
