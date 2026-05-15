@@ -1,7 +1,4 @@
 {
   "name": "Sonos Spotify Search Card",
-  "filename": "sonos-spotify-card.js",
-  "render_readme": true,
-  "content_in_root": true,
-  "homeassistant": "2026.5.1"
+  "render_readme": true
 }

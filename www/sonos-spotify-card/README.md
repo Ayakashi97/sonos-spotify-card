@@ -18,8 +18,15 @@ A custom Home Assistant Lovelace card for controlling Sonos speakers with an int
 2. Open **HACS** in Home Assistant.
 3. Click the three dots in the top right corner and select **Custom repositories**.
 4. Add the URL: `https://github.com/Ayakashi97/sonos-spotify-card`
-5. Select **Lovelace** (or Plugin) as the category.
-6. Click **Add**, then find the card in the HACS list and click **Download**.
+5. Select **Lovelace** (or Dashboard) as the category.
+6. Click **Add**.
+
+**Troubleshooting "Not Compliant" Error:**
+If you see a "Repository structure for main is not compliant" error, please ensure:
+1. You have **pushed** all files (`hacs.json`, `README.md`, and the `dist/` folder) to your GitHub `main` branch.
+2. You have added the topic `lovelace` or `hacs` to your GitHub repository (under the "About" settings).
+3. You are selecting the **Lovelace** (or Dashboard) category when adding the repository in HACS.
+4. Your repository is **Public**.
 
 ### Method 2: Manual
 1. Download the `sonos-spotify-card.js` file from the latest release.
