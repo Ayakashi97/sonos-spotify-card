@@ -415,8 +415,6 @@ class SonosSpotifyCardEditor extends LitElement {
             .configValue="${"entity"}"
             @selected="${this._valueChanged}"
             @closed="${(ev) => ev.stopPropagation()}"
-            fixedMenuPosition
-            naturalMenuWidth
           >
             ${entities.map(entity => html`<mwc-list-item .value="${entity}">${entity}</mwc-list-item>`)}
           </ha-select>
@@ -428,8 +426,6 @@ class SonosSpotifyCardEditor extends LitElement {
             .configValue="${"spotify_entity"}"
             @selected="${this._valueChanged}"
             @closed="${(ev) => ev.stopPropagation()}"
-            fixedMenuPosition
-            naturalMenuWidth
           >
             ${entities.map(entity => html`<mwc-list-item .value="${entity}">${entity}</mwc-list-item>`)}
           </ha-select>
@@ -443,18 +439,22 @@ class SonosSpotifyCardEditor extends LitElement {
       return;
     }
     const target = ev.target;
-    if (this[`_${target.configValue}`] === target.value) {
+    const value = target.value;
+    const configValue = target.configValue;
+
+    if (this._config[configValue] === value) {
       return;
     }
-    if (target.configValue) {
-      if (target.value === "") {
+
+    if (configValue) {
+      if (value === "") {
         const tmpConfig = { ...this._config };
-        delete tmpConfig[target.configValue];
+        delete tmpConfig[configValue];
         this._config = tmpConfig;
       } else {
         this._config = {
           ...this._config,
-          [target.configValue]: target.value,
+          [configValue]: value,
         };
       }
     }
