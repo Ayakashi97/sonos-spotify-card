@@ -11,6 +11,7 @@ class SpotifySearchTile extends LitElement {
       config: { type: Object },
       _results: { type: Array },
       _searching: { type: Boolean },
+      _error: { type: String },
     };
   }
 
@@ -18,6 +19,7 @@ class SpotifySearchTile extends LitElement {
     super();
     this._results = [];
     this._searching = false;
+    this._error = "";
   }
 
   render() {
@@ -54,23 +56,6 @@ class SpotifySearchTile extends LitElement {
         </div>
       </ha-card>
     `;
-  }
-
-  static get properties() {
-    return {
-      hass: { type: Object },
-      config: { type: Object },
-      _results: { type: Array },
-      _searching: { type: Boolean },
-      _error: { type: String },
-    };
-  }
-
-  constructor() {
-    super();
-    this._results = [];
-    this._searching = false;
-    this._error = "";
   }
 
   async _search() {
