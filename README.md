@@ -40,6 +40,8 @@ target_entity: media_player.living_room_speaker # The player that will play the 
 spotify_entity: media_player.spotify_your_account # Your Spotify media player entity
 ```
 
+**Note:** Ensure that `spotify_entity` is the actual media player entity created by the **Spotify integration**, not a Sonos or other speaker.
+
 ## Troubleshooting
 If you see a "Repository structure for main is not compliant" error, ensure you have:
 1. Pushed `hacs.json`, `README.md`, and `spotify-search-tile.js` to the `main` branch.
